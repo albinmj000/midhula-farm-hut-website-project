@@ -1,3 +1,5 @@
+# midhula-farm-hut-website-project
+
 ## Midhula Farm Hut
 
 The Midhula Farm Hut website is a responsive showcase for ornamental fish, aquarium life, and the business's social and contact links.
@@ -55,8 +57,3 @@ Build and start the production server with:
 npm run build
 npm run start
 ```
-
-First, run the development server:
-
-```bash
-npm run dev
