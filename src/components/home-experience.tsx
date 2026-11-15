@@ -301,6 +301,7 @@ function GalleryTile({
   href,
   image,
   video,
+  poster,
   alt,
   label,
   className = "",
@@ -310,6 +311,7 @@ function GalleryTile({
   href: string;
   image?: string;
   video?: string;
+  poster?: string;
   alt: string;
   label: string;
   className?: string;
@@ -332,6 +334,7 @@ function GalleryTile({
           muted
           playsInline
           preload="metadata"
+          poster={poster}
           aria-label={alt}
         >
           <source src={video} type="video/mp4" />
@@ -494,14 +497,9 @@ export default function HomeExperience() {
         <section className="hero" id="home" aria-labelledby="hero-title">
           <div className="hero__image" aria-hidden="true">
             <div className="hero__image-inner">
-              <Image
-                alt="Golden ornamental fish from Midhula Farm Hut's Instagram profile"
-                fill
-                priority
-                quality={95}
-                sizes="(max-width: 800px) 100vw, 58vw"
-                src="/midhula-goldfish.png"
-              />
+              <video autoPlay loop muted playsInline preload="auto" aria-hidden="true">
+                <source src="/mp4%20background.mp4" type="video/mp4" />
+              </video>
             </div>
           </div>
           <div className="particles" aria-hidden="true">
@@ -670,6 +668,7 @@ export default function HomeExperience() {
                 description="Bright patterns and easygoing movement bring a cheerful spark to freshwater life."
                 href={platiesHighlightUrl}
                 video="/midhula-platies-story.mp4"
+                poster="/midhula-platies-poster.png"
                 reducedMotion={Boolean(prefersReducedMotion)}
               />
               <FishCard
@@ -725,6 +724,7 @@ export default function HomeExperience() {
               <GalleryTile
                 href={platiesHighlightUrl}
                 video="/midhula-platies-story.mp4"
+                poster="/midhula-platies-poster.png"
                 alt="Platies featured in Midhula Farm Hut's Instagram highlight"
                 label="Platies"
                 reducedMotion={Boolean(prefersReducedMotion)}

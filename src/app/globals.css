@@ -301,13 +301,13 @@ button {
   align-items: center;
   padding: 7rem 5.2vw 5rem;
   overflow: hidden;
-  background: linear-gradient(110deg, #101114 0%, #101114 38%, #102d24 100%);
+  background: #000000;
 }
 
 .hero::before {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(16, 17, 20, 0.98) 0%, rgba(16, 17, 20, 0.9) 34%, rgba(16, 17, 20, 0.15) 70%, rgba(16, 17, 20, 0.18) 100%);
+  background: linear-gradient(90deg, #000000 0%, #000000 35%, rgba(0, 0, 0, 0.9) 45%, rgba(0, 0, 0, 0.48) 59%, transparent 78%);
   content: "";
   pointer-events: none;
   z-index: 2;
@@ -319,30 +319,25 @@ button {
   right: 2.5%;
   bottom: 0;
   width: 57%;
-  opacity: 0.9;
+  opacity: 1;
   overflow: hidden;
-  background: radial-gradient(ellipse at 55% 48%, rgba(212, 164, 58, 0.14), rgba(22, 121, 197, 0.035) 46%, transparent 73%);
 }
 
 .hero__image-inner {
   position: absolute;
-  inset: 4% 5% 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 14%, #000 30%, #000 64%, rgba(0, 0, 0, 0.72) 75%, transparent 88%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 14%, #000 30%, #000 64%, rgba(0, 0, 0, 0.72) 75%, transparent 88%, transparent 100%);
+  inset: 0 0 0 4%;
+  -webkit-mask-image: radial-gradient(ellipse 76% 76% at 58% 50%, #000 38%, rgba(0, 0, 0, 0.92) 56%, transparent 83%);
+  mask-image: radial-gradient(ellipse 76% 76% at 58% 50%, #000 38%, rgba(0, 0, 0, 0.92) 56%, transparent 83%);
 }
 
-.hero__image img {
+.hero__image video {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   object-position: center;
   mix-blend-mode: screen;
   filter: saturate(1.1) contrast(1.04);
-}
-
-.hero__image::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, var(--ink) 0%, transparent 28%, transparent 78%, var(--ink) 100%);
-  content: "";
 }
 
 .hero__content {
@@ -1284,7 +1279,7 @@ button {
   }
 
   .hero::before {
-    background: linear-gradient(0deg, rgba(16, 17, 20, 0.98) 0%, rgba(16, 17, 20, 0.92) 38%, rgba(16, 17, 20, 0.15) 100%);
+    background: linear-gradient(0deg, #000000 0%, rgba(0, 0, 0, 0.96) 36%, rgba(0, 0, 0, 0.38) 67%, transparent 100%);
   }
 
   .hero__image {
@@ -1297,7 +1292,7 @@ button {
   }
 
   .hero__image-inner {
-    inset: 0 0 0 14%;
+    inset: 0 0 0 4%;
   }
 
   .hero__content {
