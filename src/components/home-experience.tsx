@@ -116,6 +116,7 @@ function AutoplayVideo({
   decorative?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showControls, setShowControls] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -127,26 +128,42 @@ function AutoplayVideo({
     video.defaultMuted = true;
     video.playsInline = true;
 
+    let attempts = 0;
+    let requestPending = false;
     const attemptPlayback = () => {
-      if (video.paused) {
-        // Autoplay can reject before the media is ready or under device policy.
-        // Retry on canplay below and consume every rejection to avoid an
-        // unhandled promise; expose the rejection name for remote inspection.
-        void video.play().catch((error: unknown) => {
-          if (video.isConnected) {
-            video.dataset.autoplayError =
-              error instanceof DOMException ? error.name : "PlaybackError";
-          }
-        });
-      }
+      if (!video.paused || requestPending || attempts >= 2) return;
+
+      attempts += 1;
+      requestPending = true;
+      // Try once on mount and at most once more when media is ready. Consume
+      // rejections and expose a native control so the user can start playback.
+      void video.play().then(() => {
+        requestPending = false;
+      }).catch((error: unknown) => {
+        requestPending = false;
+        if (video.isConnected) {
+          video.dataset.autoplayError =
+            error instanceof DOMException ? error.name : "PlaybackError";
+          setShowControls(true);
+        }
+      });
+    };
+    const retryWhenReady = () => {
+      if (attempts === 1) attemptPlayback();
+    };
+    const exposeControlsOnMediaError = () => {
+      video.dataset.videoError = String(video.error?.code ?? "unknown");
+      setShowControls(true);
     };
     const clearPlaybackError = () => delete video.dataset.autoplayError;
 
-    video.addEventListener("canplay", attemptPlayback);
+    video.addEventListener("canplay", retryWhenReady);
+    video.addEventListener("error", exposeControlsOnMediaError);
     video.addEventListener("playing", clearPlaybackError);
     attemptPlayback();
     return () => {
-      video.removeEventListener("canplay", attemptPlayback);
+      video.removeEventListener("canplay", retryWhenReady);
+      video.removeEventListener("error", exposeControlsOnMediaError);
       video.removeEventListener("playing", clearPlaybackError);
     };
   }, [src]);
@@ -158,6 +175,8 @@ function AutoplayVideo({
       loop
       muted
       playsInline
+      controls={showControls}
+      className={showControls ? "autoplay-video--controls" : undefined}
       preload="metadata"
       poster={poster}
       aria-label={label}
@@ -541,7 +560,11 @@ export default function HomeExperience() {
         <section className="hero" id="home" aria-labelledby="hero-title">
           <div className="hero__image" aria-hidden="true">
             <div className="hero__image-inner">
-              <AutoplayVideo src="/mp4%20background.mp4" decorative />
+              <AutoplayVideo
+                src="/mp4%20background.mp4"
+                poster="/midhula-ornamental-poster.png"
+                decorative
+              />
             </div>
           </div>
           <div className="particles" aria-hidden="true">
@@ -765,6 +788,7 @@ export default function HomeExperience() {
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.32%20PM.mp4"
                 video="/WhatsApp%20Video%202026-11-14%20at%2010.39.32%20PM.mp4"
+                poster="/whatsapp-01-poster.png"
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Little Lives Growing Beneath Those Golden Fins"
                 ariaLabel="Open WhatsApp video 1 in a new tab"
@@ -772,6 +796,7 @@ export default function HomeExperience() {
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.33%20PM.mp4"
                 video="/WhatsApp%20Video%202026-11-14%20at%2010.39.33%20PM.mp4"
+                poster="/whatsapp-02-poster.png"
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Tiny Lives Guarded By A Parent"
                 ariaLabel="Open WhatsApp video 2 in a new tab"
@@ -779,6 +804,7 @@ export default function HomeExperience() {
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.34%20PM.mp4"
                 video="/WhatsApp%20Video%202026-11-14%20at%2010.39.34%20PM.mp4"
+                poster="/whatsapp-03-poster.png"
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="A Splash Of Red"
                 ariaLabel="Open WhatsApp video 3 in a new tab"
@@ -786,6 +812,7 @@ export default function HomeExperience() {
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.39%20PM.mp4"
                 video="/WhatsApp%20Video%202026-11-14%20at%2010.39.39%20PM.mp4"
+                poster="/whatsapp-04-poster.png"
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Carrying The Next Generation Beneath Its Shell"
                 ariaLabel="Open WhatsApp video 4 in a new tab"
