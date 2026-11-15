@@ -104,6 +104,70 @@ function BrandMark() {
   );
 }
 
+function AutoplayVideo({
+  src,
+  poster,
+  label,
+  decorative = false,
+}: {
+  src: string;
+  poster?: string;
+  label?: string;
+  decorative?: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Set the media properties before requesting playback. iOS checks these
+    // properties when deciding whether an autoplay request is allowed.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    const attemptPlayback = () => {
+      if (video.paused) {
+        // Autoplay can reject before the media is ready or under device policy.
+        // Retry on canplay below and consume every rejection to avoid an
+        // unhandled promise; expose the rejection name for remote inspection.
+        void video.play().catch((error: unknown) => {
+          if (video.isConnected) {
+            video.dataset.autoplayError =
+              error instanceof DOMException ? error.name : "PlaybackError";
+          }
+        });
+      }
+    };
+    const clearPlaybackError = () => delete video.dataset.autoplayError;
+
+    video.addEventListener("canplay", attemptPlayback);
+    video.addEventListener("playing", clearPlaybackError);
+    attemptPlayback();
+    return () => {
+      video.removeEventListener("canplay", attemptPlayback);
+      video.removeEventListener("playing", clearPlaybackError);
+    };
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="metadata"
+      poster={poster}
+      aria-label={label}
+      aria-hidden={decorative || undefined}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
+  );
+}
+
 function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -259,18 +323,11 @@ function FishCard({
       <a href={href} rel="noreferrer" target="_blank" aria-label={`Explore ${title} on Instagram`}>
         <div className="fish-card__media">
           {video ? (
-            <video
-              autoPlay={!reducedMotion}
-              controls={reducedMotion}
-              loop={!reducedMotion}
-              muted
-              playsInline
-              preload="metadata"
+            <AutoplayVideo
+              src={video}
               poster={poster}
-              aria-label={videoLabel ?? "Video from Midhula Farm Hut's platies highlight"}
-            >
-              <source src={video} type="video/mp4" />
-            </video>
+              label={videoLabel ?? "Video from Midhula Farm Hut's platies highlight"}
+            />
           ) : (
             <Image
               alt={alt ?? "Ornamental fish from Midhula Farm Hut"}
@@ -305,7 +362,6 @@ function GalleryTile({
   alt,
   label,
   className = "",
-  reducedMotion,
   ariaLabel,
 }: {
   href: string;
@@ -315,7 +371,6 @@ function GalleryTile({
   alt: string;
   label: string;
   className?: string;
-  reducedMotion: boolean;
   ariaLabel?: string;
 }) {
   return (
@@ -327,18 +382,7 @@ function GalleryTile({
       aria-label={ariaLabel ?? `View ${label} on Instagram`}
     >
       {video ? (
-        <video
-          autoPlay={!reducedMotion}
-          controls={reducedMotion}
-          loop={!reducedMotion}
-          muted
-          playsInline
-          preload="metadata"
-          poster={poster}
-          aria-label={alt}
-        >
-          <source src={video} type="video/mp4" />
-        </video>
+        <AutoplayVideo src={video} poster={poster} label={alt} />
       ) : (
         <Image
           alt={alt}
@@ -497,9 +541,7 @@ export default function HomeExperience() {
         <section className="hero" id="home" aria-labelledby="hero-title">
           <div className="hero__image" aria-hidden="true">
             <div className="hero__image-inner">
-              <video autoPlay loop muted playsInline preload="auto" aria-hidden="true">
-                <source src="/mp4%20background.mp4" type="video/mp4" />
-              </video>
+              <AutoplayVideo src="/mp4%20background.mp4" decorative />
             </div>
           </div>
           <div className="particles" aria-hidden="true">
@@ -595,18 +637,11 @@ export default function HomeExperience() {
         <section className="about section-pad" id="about" aria-labelledby="about-title">
           <div className="section-inner about__grid">
             <div className="about__image-wrap reveal-up clip-reveal">
-              <video
-                autoPlay={!prefersReducedMotion}
-                controls={prefersReducedMotion}
-                loop={!prefersReducedMotion}
-                muted
-                playsInline
-                preload="metadata"
+              <AutoplayVideo
+                src="/Recording%202.mp4"
                 poster="/midhula-lobster-poster.png"
-                aria-label="Red lobster carrying eggs in Midhula Farm Hut's breeding footage"
-              >
-                <source src="/Recording%202.mp4" type="video/mp4" />
-              </video>
+                label="Red lobster carrying eggs in Midhula Farm Hut's breeding footage"
+              />
               <span className="about__image-tag">A closer look at aquatic life</span>
             </div>
             <div className="about__copy reveal-up">
@@ -719,7 +754,6 @@ export default function HomeExperience() {
                 image="/guppy.jpeg"
                 alt="Colorful guppies in a green-rimmed net"
                 label="Guppies"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
               <GalleryTile
                 href={platiesHighlightUrl}
@@ -727,7 +761,6 @@ export default function HomeExperience() {
                 poster="/midhula-platies-poster.png"
                 alt="Platies featured in Midhula Farm Hut's Instagram highlight"
                 label="Platies"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.32%20PM.mp4"
@@ -735,7 +768,6 @@ export default function HomeExperience() {
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Little Lives Growing Beneath Those Golden Fins"
                 ariaLabel="Open WhatsApp video 1 in a new tab"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.33%20PM.mp4"
@@ -743,7 +775,6 @@ export default function HomeExperience() {
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Tiny Lives Guarded By A Parent"
                 ariaLabel="Open WhatsApp video 2 in a new tab"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.34%20PM.mp4"
@@ -751,7 +782,6 @@ export default function HomeExperience() {
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="A Splash Of Red"
                 ariaLabel="Open WhatsApp video 3 in a new tab"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
               <GalleryTile
                 href="/WhatsApp%20Video%202026-11-14%20at%2010.39.39%20PM.mp4"
@@ -759,7 +789,6 @@ export default function HomeExperience() {
                 alt="WhatsApp video showing ornamental aquatic life"
                 label="Carrying The Next Generation Beneath Its Shell"
                 ariaLabel="Open WhatsApp video 4 in a new tab"
-                reducedMotion={Boolean(prefersReducedMotion)}
               />
             </div>
             <a className="gallery__source" href={instagramUrl} rel="noreferrer" target="_blank">
