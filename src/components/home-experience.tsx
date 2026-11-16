@@ -562,7 +562,6 @@ export default function HomeExperience() {
             <div className="hero__image-inner">
               <AutoplayVideo
                 src="/mp4%20background.mp4"
-                poster="/midhula-ornamental-poster.png"
                 decorative
               />
             </div>
