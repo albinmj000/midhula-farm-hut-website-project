@@ -128,28 +128,20 @@ function AutoplayVideo({
     video.defaultMuted = true;
     video.playsInline = true;
 
-    let attempts = 0;
-    let requestPending = false;
+    let playbackRequested = false;
     const attemptPlayback = () => {
-      if (!video.paused || requestPending || attempts >= 2) return;
+      if (!video.paused || playbackRequested) return;
 
-      attempts += 1;
-      requestPending = true;
-      // Try once on mount and at most once more when media is ready. Consume
-      // rejections and expose a native control so the user can start playback.
-      void video.play().then(() => {
-        requestPending = false;
-      }).catch((error: unknown) => {
-        requestPending = false;
-        if (video.isConnected) {
+      playbackRequested = true;
+      // Wait until media is ready before asking iOS to play. An early request
+      // can reject during loading and incorrectly reveal the native controls.
+      void video.play().catch((error: unknown) => {
+        if (video.isConnected && video.paused) {
           video.dataset.autoplayError =
             error instanceof DOMException ? error.name : "PlaybackError";
           setShowControls(true);
         }
       });
-    };
-    const retryWhenReady = () => {
-      if (attempts === 1) attemptPlayback();
     };
     const exposeControlsOnMediaError = () => {
       video.dataset.videoError = String(video.error?.code ?? "unknown");
@@ -157,12 +149,14 @@ function AutoplayVideo({
     };
     const clearPlaybackError = () => delete video.dataset.autoplayError;
 
-    video.addEventListener("canplay", retryWhenReady);
+    video.addEventListener("canplay", attemptPlayback, { once: true });
     video.addEventListener("error", exposeControlsOnMediaError);
     video.addEventListener("playing", clearPlaybackError);
-    attemptPlayback();
+    if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      attemptPlayback();
+    }
     return () => {
-      video.removeEventListener("canplay", retryWhenReady);
+      video.removeEventListener("canplay", attemptPlayback);
       video.removeEventListener("error", exposeControlsOnMediaError);
       video.removeEventListener("playing", clearPlaybackError);
     };
